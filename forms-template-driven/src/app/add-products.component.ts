@@ -1,25 +1,47 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
-
-interface IProduct {
-  name: string,
-  description: string,
-  price: number
-}
+import { LoggerService } from './services/logger.service';
+import { IProduct } from './models/product';
+import { ProductDataService } from './services/product-data.service';
 
 @Component({
   selector: 'ftd-add-products',
   templateUrl: './add-products.component.html',
   styleUrls: ['./add-products.component.css']
 })
-export class AddProductsComponent {
+export class AddProductsComponent implements OnInit, OnDestroy {
   product: IProduct = {
-    name: 'iPhone',
-    description: 'Un telefono',
-    price: 1200
+    name: '',
+    description: '',
+    price: 0
+  };
+  localProductList: IProduct[] = [];
+
+  // private _loggerService: LoggerService;
+  constructor(private loggerService: LoggerService, 
+    private productDataService: ProductDataService) {
+    // this._loggerService = loggerService;
+  }
+
+  ngOnInit(): void {
+    this.loggerService.log('Inicialización');
+    this.localProductList = this.productDataService.list();
+  }
+
+  ngOnDestroy(): void {
+    
   }
   
-  onButtonClicked(form: NgForm) {
-    console.log('Data', form);
+  onSubmitForm(newProductForm: NgForm) {
+    if (newProductForm.valid) {
+      this.loggerService.log('Formulario Válido')
+
+      this.productDataService.add(newProductForm.value as IProduct);
+      this.localProductList = this.productDataService.list();
+      newProductForm.resetForm();
+      // hago lo que tenga que hacer
+    } else {
+      this.loggerService.error('Formulario no valido');
+    }
   }
 }
